@@ -75,11 +75,16 @@ The offering was reset to one seat left. A selected the row with `FOR UPDATE`, w
 ### Why it works
 A plain SELECT does not stop other sessions from changing the row, so decisions can be based on out-of-date data. FOR UPDATE locks the row, so other sessions queue up and then read current data.
 
+### Isolation level
+The transactions here were started with a plain `BEGIN`, so they ran at PostgreSQL's default isolation level, READ COMMITTED. At this level each statement sees only data that was committed before that statement began. A transaction can therefore read a value, and another transaction can change and commit it before the first one writes. That is what happened in the race: B read 1203 seats taken, A committed 1204, and B's update then ran against the new value and hit the CHECK constraint.
+
+`FOR UPDATE` does not change the isolation level. It adds an explicit row lock, so B had to wait and then read the committed count. A stricter level such as REPEATABLE READ or SERIALIZABLE would instead make B fail with a serialization error when it tried to update a row that changed after its snapshot, and the application would have to retry the transaction.
+
 ### Trade-off
 Locking makes concurrent users wait. Transactions that hold locks should be kept short.
 
 ## ACID summary
 - **Atomicity:** commit and rollback demos (sections 1 and 2).
 - **Consistency:** the CHECK constraint refuses `seats_taken` above `capacity`.
-- **Isolation:** the race shows what goes wrong without locking, and FOR UPDATE fixes it.
+- **Isolation:** all demos ran at the default READ COMMITTED level. The race shows what that level allows without locking, and FOR UPDATE fixes it (see "Isolation level" above).
 - **Durability:** the committed enrolment (250003) remained visible after COMMIT.

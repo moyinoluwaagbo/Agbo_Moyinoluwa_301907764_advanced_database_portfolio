@@ -3,11 +3,19 @@
 **Course:** MIT 8103 Advanced Database Systems (Miva Open University)
 **Student:** Moyinoluwa Toluwase Agbo
 
+## Selected case study: MivaDB
+
+- **Organisation / scenario:** MivaDB, a simulated student management and results system modelled on Miva Open University.
+- **Nature of the system:** an online university that registers students into programmes and courses each semester, records their results, and delivers teaching through an LMS.
+- **Users:** students, lecturers, programme coordinators and registry staff.
+- **Major data:** programmes, lecturers, semesters, courses, students, course offerings, enrolments and results (relational data), and LMS activity events such as logins, video views, quiz attempts, forum posts and assignment submissions (document data).
+- **Key operations:** register students for course offerings within seat limits, enter and look up results, report average scores per course, and record and query LMS activity.
+
+All five portfolio activities use this same case study. All data is synthetic, generated with Faker and my own Python scripts, so no real student data is used.
+
 ## About the project
 
-MivaDB is a simulated student management and results system modelled on a university like Miva. The five portfolios take one case study through the full life of a database: design, performance tuning, transactions, NoSQL, and distribution.
-
-The data is synthetic, generated with scripts in this repository. No real student data is used.
+The five portfolios take the MivaDB case study through the full life of a database: design, performance tuning, transactions, NoSQL, and distribution.
 
 ## Repository structure
 
@@ -26,7 +34,7 @@ Each folder has its own README with the method, evidence and screenshots.
 | Portfolio | Result |
 |---|---|
 | 2 | Enrolments by offering: about 235 ms before an index, about 1.2 ms after. Top courses by average score: about 630 ms before, about 0.66 ms with a materialized view |
-| 3 | Without row locking, two students could take the last seat. With `FOR UPDATE`, the second session waits and is correctly refused |
+| 3 | Without locking, both sessions saw one free seat and only the CHECK constraint stopped overbooking, returning a raw error. With `FOR UPDATE`, the second session waits, sees the offering is full (1204 of 1204) and rolls back cleanly |
 | 4 | Student activity lookup in MongoDB: full scan of 100,000 documents in 89 ms, versus 4 documents examined in 1 ms with a compound index |
 | 5 | The replica streams changes from the primary and refuses direct writes |
 
